@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta content="text/html;charset=utf-8" http-equiv="Content-Type">
+<meta content="utf-8" http-equiv="encoding">
+<title>pi-station sensor charts</title>
+<script src="plotly-latest.min.js"></script>
+<script src="//code.jquery.com/jquery-1.12.0.min.js"></script>
+<script src="//code.jquery.com/jquery-migrate-1.2.1.min.js"></script>
+<link rel="stylesheet" type="text/css" href="style.css">
+</head>
+<body>
+<div id="DivMenu">
+<ul>
+  <li><a href="index.html">Home</a></li>
+  <li><a href="charts.html">Charts</a></li>
+  <li><a href="stream.html">Stream</a></li>
+  <li><a href="images">Snapshots</a></li>
+</ul> 
+</div>
+<!-- <div id="DivTemp" style="width:800px;height:600px;"></div> -->
+<!-- <div id="DivHumi" style="width:800px;height:600px;"></div> -->
+<!-- <div id="DivPres" style="width:800px;height:600px;"></div> -->
+<div id="DivTemp"></div>
+<div id="DivHumi"></div>
+<div id="DivPres"></div>
+
+<script>
+var xmlhttp = new XMLHttpRequest();
+var url = "sensors.json";
+var timestamp = [];
+var cpu_temp = [];
+var ds_temp = [];
+var dht_humi = [];
+var dht_temp = [];
+var bmp_temp = [];
+var bmp_pres = [];
+var bmp_slps = [];
+
+xmlhttp.onreadystatechange = function() {
+    if (xmlhttp.readyState == 4 && xmlhttp.status == 200) {
+        var myArr = JSON.parse(xmlhttp.responseText);
+        myFunction(myArr);
+    }
+};
+xmlhttp.open("GET", url, true);
+xmlhttp.send();
+
+function myFunction(arr) {
+    var i;
+    for(i = 0; i < arr.length; i++) {
+        timestamp[i] = new Date((arr[i].timestamp)*1000);
+        cpu_temp[i] = arr[i].cpu_temp;
+        ds_temp[i] = arr[i].ds_temp;
+        dht_humi[i] = arr[i].dht_humi;
+        dht_temp[i] = arr[i].dht_temp;
+        bmp_temp[i] = arr[i].bmp_temp;
+        bmp_pres[i] = (arr[i].bmp_pres)/100;
+        bmp_slps[i] = (arr[i].bmp_slps)/100;
+    }
+    
+    var trace0 = {
+    x: timestamp, 
+    y: cpu_temp,
+    mode: 'markers',
+    type: 'scatter',
+    name: 'System temp',
+    marker: { size: 2, color: '#ff9933' }
+    };
+    
+    var trace1 = {
+    x: timestamp,
+    y: dht_temp,
+    mode: 'markers',
+    type: 'scatter',
+    name: 'DHT temp',
+    marker: { size: 2, color: '#ff6600' }
+    };
+    
+    var trace2 = {
+    x: timestamp,
+    y: ds_temp,
+    mode: 'lines',
+    type: 'scatter',
+    name: 'DS temp',
+    marker: { color: '#ff3300' }
+    };
+    
+    var trace3 = {
+    x: timestamp,
+    y: bmp_temp,
+    mode: 'lines',
+    type: 'scatter',
+    name: 'DHT temp',
+    marker: { color: '#cc0000' }
+    };
+    
+    var trace4 = {
+    x: timestamp,
+    y: bmp_pres,
+    mode: 'lines',
+    type: 'scatter',
+    name: 'Pressure (Measured)',
+    marker: { color: '#339966' }
+    };
+    
+    var trace5 = {
+    x: timestamp,
+    y: bmp_slps,
+    mode: 'lines',
+    type: 'scatter',
+    name: 'Sea Level Pressure',
+    marker: { color: '#3366ff' }
+    };
+    
+    var trace6 = {
+    x: timestamp,
+    y: dht_humi,
+    mode: 'lines',
+    type: 'scatter',
+    name: 'Humidity',
+    marker: { size: 2 , color: '#525252' }
+    };
+    
+    var templayout = {
+    yaxis: {
+            title:'Temp ºC'
+    },
+    title: 'Temperatures'
+    };
+    
+    var preslayout = {
+    yaxis: {
+            title:'hPa'
+    },
+    title:' Pressure'
+    };
+    
+    var humilayout = {
+    	showlegend: true,
+        yaxis: {
+            range: [0, 100],
+            title: '%'
+            },
+        title: 'Humidity'
+    };
+    
+    var tempdata = [trace0,trace1,trace2,trace3];
+    var presdata = [trace4,trace5];
+    var humidata = [trace6];
+    
+    Plotly.newPlot('DivTemp', tempdata, templayout);
+    Plotly.newPlot('DivHumi', humidata, humilayout);
+    Plotly.newPlot('DivPres', presdata, preslayout);
+
+}
+</script>
+</body>
+</html> 
